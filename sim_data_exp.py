@@ -21,14 +21,14 @@ def simulation(d, sample_size, runs):
     for i in range(runs):
         # randomly draw model parameters
 
-        # length of vector a
+        # a's sphere radius
         r_a = random.uniform(0, 1)
-        # length of vector b
+        # b's sphere radius
         r_b = random.uniform(0, 1)
         # strength of influence of confounder on target variable Y
         c = random.uniform(0, 1)
-        # draw random vectors a and b
 
+        # draw random vectors a and b
         a = random.normal(0, 1, d)
         b = random.normal(0, 1, d)
         a = a / sqrt(sum(a ^ 2)) * r_a
@@ -36,19 +36,20 @@ def simulation(d, sample_size, runs):
 
         # generate samples of the noise vector E
         E = random.normal(0, 1, (sample_size, d))
-        random_matrix = random.normal(0, 1, (d, d))
-        E = np.matmul(E, random_matrix)
+        # Refer G as a parameter
+        G = random.normal(0, 1, (d, d))
+        E = np.matmul(E, G)
 
         # generate samples of the confounder Z and the noise term NY for the target variable Y
         Z = random.normal(0, 1, sample_size)
-        NY = random.normal(0, 1, sample_size)
+        F = random.normal(0, 1, sample_size)
 
         # compute X and Y via linear structural equations
         X = E + np.matmiul(Z, np.T(b))
-        Y = c * Z + np.matmul(X, a) + NY
+        Y = c * Z + np.matmul(X, a) + F
 
         # compute confounding parameters
-        SigmaEE = np.matmul(np.T(random_matrix), random_matrix)
+        SigmaEE = np.matmul(np.T(G), G)
         SigmaXX = SigmaEE + np.matmul(b, np.T(b))
         confounding_vector = X * np.matmul(np.linalg.inv(SigmaXX), b)
         sq_length_cv = np.sum(confounding_vector ** 2)
@@ -60,6 +61,6 @@ def simulation(d, sample_size, runs):
         beta_est[i] = parameters[1]
         eta_est[i] = parameters[2]
 
-}
+
 
 # TODO: plot
