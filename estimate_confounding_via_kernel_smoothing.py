@@ -20,7 +20,7 @@ def estimate_confounding_via_kernel_smoothing(X, Y):
     weights = np.matmul(np.T(a_hat), eigenvectors) ** 2
     weights = weights / np.sum(weights)
     smoothing_matrix = outer_with_kernel(normed_spectrum[:, None], normed_spectrum)
-    smoothing_matrix = np.matmul((smoothing_matrix, np.T(weights)))
+    smoothed_weights = np.matmul((smoothing_matrix, np.T(weights)))
     weights_causal = np.full(d, 1/d)
     parameters = optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weights)
     return parameters
