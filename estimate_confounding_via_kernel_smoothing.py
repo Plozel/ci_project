@@ -17,10 +17,10 @@ def estimate_confounding_via_kernel_smoothing(X, Y):
     a_hat = np.matmul(np.linalg.inv(cxx), cxy)
     spectrumX, eigenvectors = np.linalg.eig(cxx)
     normed_spectrum = spectrumX / (max(spectrumX)-min(spectrumX))
-    weights = np.matmul(np.T(a_hat), eigenvectors) ** 2
+    weights = np.matmul(np.transpose(a_hat), eigenvectors) ** 2
     weights = weights / np.sum(weights)
     smoothing_matrix = outer_with_kernel(normed_spectrum[:, None], normed_spectrum)
-    smoothed_weights = np.matmul((smoothing_matrix, np.T(weights)))
+    smoothed_weights = np.matmul(smoothing_matrix, np.transpose(weights))
     weights_causal = np.full(d, 1/d)
     parameters = optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weights)
     return parameters
@@ -55,12 +55,12 @@ def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weig
         :return:
         """
         g = np.full(d, 1/np.sqrt(d))
-        T = np.diag(spectrumX) + _lambda[1] * np.matmul(g, np.T(g))
+        T = np.diag(spectrumX) + _lambda[1] * np.matmul(g, np.transpose(g))
         _, eigenvectors_T = np.linalg.eig(T)
         weights_confounded = (spectrumX ** (-2)) * (np.matmul(g, eigenvectors_T) ** 2)
         weights_confounded = weights_confounded / np.sum(weights_confounded)
         weights_ideal = (1 - _lambda[0]) * weights_causal + _lambda[0] * weights_confounded
-        smoothed_weights_ideal = np.matmul(smoothing_matrix, np.T(weights_ideal))
+        smoothed_weights_ideal = np.matmul(smoothing_matrix, np.transpose(weights_ideal))
         dist = np.sum(np.abs(smoothed_weights - smoothed_weights_ideal))
         return (dist)
 

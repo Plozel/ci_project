@@ -1,7 +1,8 @@
 import numpy as np
 from numpy import random
 from math import sqrt
-
+import matplotlib.pyplot as plt
+from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_kernel_smoothing
 
 def simulation(d, sample_size, runs):
     """
@@ -31,8 +32,8 @@ def simulation(d, sample_size, runs):
         # draw random vectors a and b
         a = random.normal(0, 1, d)
         b = random.normal(0, 1, d)
-        a = a / sqrt(sum(a ^ 2)) * r_a
-        b = b / sqrt(sum(b ^ 2)) * r_b
+        a = a / sqrt(sum(a ** 2)) * r_a
+        b = b / sqrt(sum(b ** 2)) * r_b
 
         # generate samples of the noise vector E
         E = random.normal(0, 1, (sample_size, d))
@@ -45,12 +46,12 @@ def simulation(d, sample_size, runs):
         F = random.normal(0, 1, sample_size)
 
         # compute X and Y via linear structural equations
-        X = E + np.matmiul(Z, np.T(b))
+        X = E + np.outer(Z, b)
         Y = c * Z + np.matmul(X, a) + F
 
         # compute confounding parameters
-        SigmaEE = np.matmul(np.T(G), G)
-        SigmaXX = SigmaEE + np.matmul(b, np.T(b))
+        SigmaEE = np.matmul(np.transpose(G), G)
+        SigmaXX = SigmaEE + np.matmul(b, np.transpose(b))
         confounding_vector = X * np.matmul(np.linalg.inv(SigmaXX), b)
         sq_length_cv = np.sum(confounding_vector ** 2)
         beta.append(sq_length_cv / (r_a ** 2 + sq_length_cv))
@@ -58,9 +59,19 @@ def simulation(d, sample_size, runs):
 
         # estimate both confounding parameters
         parameters = estimate_confounding_via_kernel_smoothing(X, Y)
-        beta_est[i] = parameters[1]
-        eta_est[i] = parameters[2]
+        beta_est.append(parameters[0])
+        eta_est.append(parameters[1])
+
+    return beta_est, eta_est
+if __name__ == '__main__':
+    d = 5
+    sample_size = 10
+    runs = 2
+
+    beta_est, eta_est = simulation(d, sample_size, runs)
+    fig = plt.figure()
+    s = plt.scatter(beta_est, eta_est)
+    plt.show()
 
 
 
-# TODO: plot
