@@ -2,10 +2,10 @@ import numpy as np
 from numpy import random
 from math import sqrt
 import matplotlib.pyplot as plt
-from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_kernel_smoothing
+from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_kernel_smoothing, mat_vec_cov
 
 
-def simulation(d, sample_size, runs):
+def simulation_normalization(d, sample_size, runs):
     """
     :param d: dimension
     :param sample_size: sample
@@ -35,10 +35,15 @@ def simulation(d, sample_size, runs):
         a = a / sqrt(sum(a ** 2)) * r_a
         b = b / sqrt(sum(b ** 2)) * r_b
 
+        # drawing rows for parameter G to help control the scale of X variables
+        G = list()
+        for i in range(d):
+            variance = random.uniform(0, 10 * (i ** 4 + 1))
+            col = random.normal(0, variance, (d, 1))
+            G.append(col)
+        G = np.concatenate(G, axis=1)
         # generate samples of the noise vector E
         E = random.normal(0, 1, (sample_size, d))
-        # Refer G as a parameter
-        G = random.normal(0, 1, (d, d))
         E = np.matmul(E, G)
 
         # generate samples of the confounder Z and the noise term NY for the target variable Y
@@ -49,16 +54,21 @@ def simulation(d, sample_size, runs):
         X = E + np.outer(Z, b)
         Y = c * Z + np.matmul(X, a) + F
 
+        # normalizing X using MinMax
+        X_normalized = (X - X.mean(axis=0)) / np.sqrt(np.var(X, axis=0))
+        m = Y - F - c * Z
+        a_adj = np.linalg.lstsq(X_normalized, m)[0]
+        r_a = np.linalg.norm(a_adj)
+
         # compute confounding parameters
-        SigmaEE = np.matmul(np.transpose(G), G)
-        SigmaXX = SigmaEE + np.outer(b, b)
+        SigmaXX = mat_vec_cov(X_normalized, X_normalized)
         confounding_vector = c * np.matmul(np.linalg.inv(SigmaXX), b)
         sq_length_cv = np.sum(confounding_vector ** 2)
         beta.append(sq_length_cv / (r_a ** 2 + sq_length_cv))
         eta.append(r_b ** 2)
 
         # estimate both confounding parameters
-        parameters = estimate_confounding_via_kernel_smoothing(X, Y)
+        parameters = estimate_confounding_via_kernel_smoothing(X_normalized, Y)
         beta_est.append(parameters[0])
         eta_est.append(parameters[1])
 
@@ -67,13 +77,13 @@ def simulation(d, sample_size, runs):
 
 if __name__ == '__main__':
     d_l = [5, 10, 20]
-    sample_size_l = [100, 1000, 10000, 100000]
+    sample_size_l = [100, 1000, 10000]
     runs = 1000
     for sample_size in sample_size_l:
         for d in d_l:
-            beta_est, beta = simulation(d, sample_size, runs)
+            beta_est, beta = simulation_normalization(d, sample_size, runs)
             fig = plt.figure()
             plt.title('d = {}   n = {}'.format(d, sample_size))
             plt.xlabel(r'\beta')
             s = plt.scatter(beta, beta_est, s=10, marker='*')
-            plt.savefig(fname='simulation_of_expirament/sim__d-{}_n-{}'.format(d, sample_size))
+            plt.savefig(fname='expirament_results_norm/sim_norm__d-{}_n-{}'.format(d, sample_size))
