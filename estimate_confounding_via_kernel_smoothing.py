@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 
+
 def estimate_confounding_via_kernel_smoothing(X, Y):
     """
     :param X: n x d matrix for the potential causes. Here d is the number of variables X_1,...,X_d and n is the number of samples
@@ -11,8 +12,8 @@ def estimate_confounding_via_kernel_smoothing(X, Y):
 
     d = X.shape[1]
     # Calculate covariance matrices
-    cxx = np.cov(X)
-    cxy = np.cov(X, Y)
+    cxx = mat_vec_cov(X, X)
+    cxy = mat_vec_cov(X, Y)
     # closed-form solution for linear regression coefficients
     a_hat = np.matmul(np.linalg.inv(cxx), cxy)
     spectrumX, eigenvectors = np.linalg.eig(cxx)
@@ -62,9 +63,16 @@ def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weig
         weights_ideal = (1 - _lambda[0]) * weights_causal + _lambda[0] * weights_confounded
         smoothed_weights_ideal = np.matmul(smoothing_matrix, np.transpose(weights_ideal))
         dist = np.sum(np.abs(smoothed_weights - smoothed_weights_ideal))
-        return (dist)
+        return dist
 
     params = minimize(get_distance, np.array([0, 0]), method="L-BFGS-B", bounds=[(0, 1), (0, 10)])
-    return params
+    return params['x']
 
 
+def mat_vec_cov(X, y):
+    X = X - np.mean(X, axis=0)
+    y = y - np.mean(y)
+    cov = np.matmul(np.transpose(X), y)
+    d = X.shape[1]
+    cov = cov/d
+    return cov
