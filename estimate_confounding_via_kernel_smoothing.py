@@ -56,7 +56,7 @@ def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weig
         :return:
         """
         g = np.full(d, 1/np.sqrt(d))
-        T = np.diag(spectrumX) + _lambda[1] * np.matmul(g, np.transpose(g))
+        T = np.diag(spectrumX) + _lambda[1] * np.outer(g, g)
         _, eigenvectors_T = np.linalg.eig(T)
         weights_confounded = (spectrumX ** (-2)) * (np.matmul(g, eigenvectors_T) ** 2)
         weights_confounded = weights_confounded / np.sum(weights_confounded)
@@ -71,8 +71,8 @@ def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weig
 
 def mat_vec_cov(X, y):
     X = X - np.mean(X, axis=0)
-    y = y - np.mean(y)
+    y = y - np.mean(y, axis=0)
     cov = np.matmul(np.transpose(X), y)
-    d = X.shape[1]
-    cov = cov/d
+    n = X.shape[0]
+    cov = cov/(n-1)
     return cov
