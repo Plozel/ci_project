@@ -52,7 +52,7 @@ def simulation(d, sample_size, runs):
 
         # compute confounding parameters
         SigmaXX = mat_vec_cov(X, X)
-        confounding_vector = np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, c * Z))
+        confounding_vector = np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, c * Z)) + np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, F))
         sq_length_cv = np.sum(confounding_vector ** 2)
         beta.append(sq_length_cv / (r_a ** 2 + sq_length_cv))
         eta.append(r_b ** 2)
