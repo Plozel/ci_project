@@ -13,7 +13,6 @@ def simulation_normalization(d, sample_size, runs):
     :return: scatter plot that shows the relation between true and estimated confounding strength beta.
              The number of points is given by the parameter 'runs'
     """
-
     beta = []
     eta = []
     beta_est = []
@@ -35,15 +34,17 @@ def simulation_normalization(d, sample_size, runs):
         a = a / sqrt(sum(a ** 2)) * r_a
         b = b / sqrt(sum(b ** 2)) * r_b
 
-        # drawing rows for parameter G to help control the scale of X variables
-        G = list()
-        for i in range(d):
-            variance = random.uniform(0, 10 * (i ** 4 + 1))
-            col = random.normal(0, variance, (d, 1))
-            G.append(col)
-        G = np.concatenate(G, axis=1)
+        # # drawing rows for parameter G to help control the scale of X variables
+        # G = list()
+        # for i in range(d):
+        #     col = random.normal(0, 1, (d, 1))
+        #     G.append(col)
+        # G = np.concatenate(G, axis=1)
+
         # generate samples of the noise vector E
         E = random.normal(0, 1, (sample_size, d))
+        # Refer G as a parameter
+        G = random.normal(0, 1, (d, d))
         E = np.matmul(E, G)
 
         # generate samples of the confounder Z and the noise term NY for the target variable Y
@@ -54,21 +55,20 @@ def simulation_normalization(d, sample_size, runs):
         X = E + np.outer(Z, b)
         Y = c * Z + np.matmul(X, a) + F
 
-        # normalizing X using MinMax
-        X_normalized = (X - X.mean(axis=0)) / np.sqrt(np.var(X, axis=0))
-        m = Y - F - c * Z
-        a_adj = np.linalg.lstsq(X_normalized, m)[0]
-        r_a = np.linalg.norm(a_adj)
-
         # compute confounding parameters
-        SigmaXX = mat_vec_cov(X_normalized, X_normalized)
+        SigmaEE = np.matmul(np.transpose(G), G)
+        SigmaXX = SigmaEE + np.outer(b, b)
         confounding_vector = c * np.matmul(np.linalg.inv(SigmaXX), b)
         sq_length_cv = np.sum(confounding_vector ** 2)
         beta.append(sq_length_cv / (r_a ** 2 + sq_length_cv))
         eta.append(r_b ** 2)
 
+        # change the scale of X by multiplication
+        scale = np.diag(np.array([100 * (i + 1) for i in range(d)]))
+        X = np.matmul(X, scale)
+
         # estimate both confounding parameters
-        parameters = estimate_confounding_via_kernel_smoothing(X_normalized, Y)
+        parameters = estimate_confounding_via_kernel_smoothing(X, Y, 0, True)
         beta_est.append(parameters[0])
         eta_est.append(parameters[1])
 
@@ -77,7 +77,7 @@ def simulation_normalization(d, sample_size, runs):
 
 if __name__ == '__main__':
     d_l = [5, 10, 20]
-    sample_size_l = [100, 1000, 10000]
+    sample_size_l = [100, 1000, 10000, 100000]
     runs = 1000
     for sample_size in sample_size_l:
         for d in d_l:
@@ -86,4 +86,4 @@ if __name__ == '__main__':
             plt.title('d = {}   n = {}'.format(d, sample_size))
             plt.xlabel(r'\beta')
             s = plt.scatter(beta, beta_est, s=10, marker='*')
-            plt.savefig(fname='expirament_results_norm/sim_norm__d-{}_n-{}'.format(d, sample_size))
+            plt.savefig(fname='expirament_results_norm/sim_norm2__d-{}_n-{}'.format(d, sample_size))

@@ -1,21 +1,32 @@
 import numpy as np
 from scipy.optimize import minimize
+from sklearn import linear_model, preprocessing
 
 
-def estimate_confounding_via_kernel_smoothing(X, Y):
+def kernel(X):
+    return X**2
+
+
+def estimate_confounding_via_kernel_smoothing(X, Y, lamda=0, norm=False):
     """
     :param X: n x d matrix for the potential causes. Here d is the number of variables X_1,...,X_d and n is the number of samples
     :param Y: column vector of n instances of the target variable
     :return: 2-dimensional vector "parameters" with the confounding parameters (beta,eta) as in the paper, with beta being the relevant one since the
              estimation of eta performs rather bad for reasons that I don't completely understand yet.
     """
-
+    if norm:
+        # normalizing X using MinMax
+        cxx = mat_vec_cov(X, X)
+        scale = np.sqrt(np.diag(np.diag(cxx)))
+        X = np.matmul(X, np.linalg.inv(scale))
+    reg = linear_model.Ridge(alpha=lamda)
     d = X.shape[1]
     # Calculate covariance matrices
     cxx = mat_vec_cov(X, X)
-    cxy = mat_vec_cov(X, Y)
+    # cxy = mat_vec_cov(X, Y)
     # closed-form solution for linear regression coefficients
-    a_hat = np.matmul(np.linalg.inv(cxx), cxy)
+    reg.fit(X, Y)
+    a_hat = np.array(reg.coef_)
     spectrumX, eigenvectors = np.linalg.eig(cxx)
     normed_spectrum = spectrumX / (max(spectrumX)-min(spectrumX))
     weights = np.matmul(np.transpose(a_hat), eigenvectors) ** 2
@@ -51,7 +62,6 @@ def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weig
 
     def get_distance(_lambda):
         """
-
         :param _lambda:
         :return:
         """
