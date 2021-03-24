@@ -47,7 +47,7 @@ def outer_with_kernel(value1, value2):
     """
     :param value1: broad of the spectrum to squared matrix
     :param value2: the spectrum as a vector
-    :return:
+    :return: the result of the kernel
     """
     sigma = 0.2
     exp = np.exp(- ((value1 - value2) ** 2) / (2 * (sigma ** 2)))
