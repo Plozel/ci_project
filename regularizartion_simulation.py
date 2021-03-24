@@ -58,7 +58,7 @@ def simulation(d, sample_size, runs):
         eta.append(r_b ** 2)
 
         # estimate both confounding parameters
-        parameters = estimate_confounding_via_kernel_smoothing(X, Y)
+        parameters = estimate_confounding_via_kernel_smoothing(X, Y, 0.5)
         beta_est.append(parameters[0])
         eta_est.append(parameters[1])
 
@@ -79,4 +79,4 @@ if __name__ == '__main__':
             plt.xlabel(r'$\beta$')
             plt.ylabel(r'$\^\beta$')
             s = plt.scatter(beta, beta_est, s=10, marker='*')
-            plt.savefig(fname='simulation_of_expirament/sim__d-{}_n-{}'.format(d, sample_size))
+            plt.savefig(fname='regularization_res/sim__d-{}_n-{}'.format(d, sample_size))

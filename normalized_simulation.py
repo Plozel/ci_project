@@ -34,10 +34,10 @@ def simulation_normalization(d, sample_size, runs):
         a = a / sqrt(sum(a ** 2)) * r_a
         b = b / sqrt(sum(b ** 2)) * r_b
 
-        # # drawing rows for parameter G to help control the scale of X variables
+        # drawing rows for parameter G to help control the scale of X variables
         # G = list()
         # for i in range(d):
-        #     col = random.normal(0, 1, (d, 1))
+        #     col = random.normal(0, 10 * (i + 2), (d, 1))
         #     G.append(col)
         # G = np.concatenate(G, axis=1)
 
@@ -84,6 +84,7 @@ if __name__ == '__main__':
             beta_est, beta = simulation_normalization(d, sample_size, runs)
             fig = plt.figure()
             plt.title('d = {}   n = {}'.format(d, sample_size))
-            plt.xlabel(r'\beta')
+            plt.xlabel(r'$\beta$')
+            plt.ylabel(r'$\^\beta$')
             s = plt.scatter(beta, beta_est, s=10, marker='*')
-            plt.savefig(fname='expirament_results_norm/sim_norm2__d-{}_n-{}'.format(d, sample_size))
+            plt.savefig(fname='expirament_results_norm/sim__d-{}_n-{}'.format(d, sample_size))

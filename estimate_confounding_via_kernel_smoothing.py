@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize
-from sklearn import linear_model, preprocessing
+from sklearn import linear_model
 
 
 def kernel(X):

@@ -52,7 +52,7 @@ def simulation(d, sample_size, runs):
 
         # compute confounding parameters
         SigmaXX = mat_vec_cov(X, X)
-        confounding_vector = np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, c * Z)) + np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, F))
+        confounding_vector = np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, c * Z))
         sq_length_cv = np.sum(confounding_vector ** 2)
         beta.append(sq_length_cv / (r_a ** 2 + sq_length_cv))
         eta.append(r_b ** 2)
@@ -76,7 +76,8 @@ if __name__ == '__main__':
             print("d = {} n = {} difference {}".format(d, sample_size, diff))
             fig = plt.figure()
             plt.title('d = {}   n = {}'.format(d, sample_size))
-            plt.xlabel(r'beta')
+            plt.xlabel(r'$\beta$')
+            plt.ylabel(r'$\^\beta$')
             s = plt.scatter(beta, beta_est, s=10, marker='*')
             plt.savefig(fname='kernel_res/sim__d-{}_n-{}'.format(d, sample_size))
 

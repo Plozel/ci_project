@@ -2,10 +2,10 @@ import numpy as np
 from numpy import random
 from math import sqrt
 import matplotlib.pyplot as plt
-from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_kernel_smoothing
+from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_kernel_smoothing, mat_vec_cov
 
 
-def simulation(d, sample_size, runs):
+def simulation_normalization(d, sample_size, runs):
     """
     :param d: dimension
     :param sample_size: sample
@@ -13,7 +13,6 @@ def simulation(d, sample_size, runs):
     :return: scatter plot that shows the relation between true and estimated confounding strength beta.
              The number of points is given by the parameter 'runs'
     """
-
     beta = []
     eta = []
     beta_est = []
@@ -35,10 +34,15 @@ def simulation(d, sample_size, runs):
         a = a / sqrt(sum(a ** 2)) * r_a
         b = b / sqrt(sum(b ** 2)) * r_b
 
+        # drawing rows for parameter G to help control the scale of X variables
+        G = list()
+        for i in range(d):
+            col = random.normal(0, 10*(i+2), (d, 1))
+            G.append(col)
+        G = np.concatenate(G, axis=1)
+
         # generate samples of the noise vector E
         E = random.normal(0, 1, (sample_size, d))
-        # Refer G as a parameter
-        G = random.normal(0, 1, (d, d))
         E = np.matmul(E, G)
 
         # generate samples of the confounder Z and the noise term NY for the target variable Y
@@ -71,12 +75,12 @@ if __name__ == '__main__':
     runs = 1000
     for sample_size in sample_size_l:
         for d in d_l:
-            beta_est, beta = simulation(d, sample_size, runs)
+            beta_est, beta = simulation_normalization(d, sample_size, runs)
+            fig = plt.figure()
             diff = np.linalg.norm(np.array(beta) - np.array(beta_est))
             print("d = {} n = {} difference {}".format(d, sample_size, diff))
-            fig = plt.figure()
             plt.title('d = {}   n = {}'.format(d, sample_size))
             plt.xlabel(r'$\beta$')
             plt.ylabel(r'$\^\beta$')
             s = plt.scatter(beta, beta_est, s=10, marker='*')
-            plt.savefig(fname='simulation_of_expirament/sim__d-{}_n-{}'.format(d, sample_size))
+            plt.savefig(fname='results_only_multivariant/sim_multi_var__d-{}_n-{}'.format(d, sample_size))
