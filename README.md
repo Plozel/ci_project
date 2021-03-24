@@ -4,7 +4,7 @@
 
 A project by Oren Ploznik & Shai Califa
 
-## Setup preparations
+### Setup preparations
 
 Before running the code you should install all the necessary requirements.
 you can install it by running the following script: <br>
