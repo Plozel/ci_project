@@ -1,7 +1,6 @@
 # Introduction to Casual Inference
 
-# Final project - Summary and python implementation of Detecting Confounding in Multivariate Linear Models via Spectral Analysis 
-## written by Dominik Janzing and Bernhard Schölkopf
+# Final project - Summary and python implementation of Detecting Confounding in Multivariate Linear Models via Spectral Analysis ## written by Dominik Janzing and Bernhard Schölkopf
 
 A project by Oren Ploznik & Shai Califa
 
