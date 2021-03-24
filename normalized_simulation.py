@@ -7,8 +7,8 @@ from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_k
 
 def simulation_normalization(d, sample_size, runs):
     """
-    :param d: dimension
-    :param sample_size: sample
+    :param d: dimension of X
+    :param sample_size: number of samples
     :param runs: number of runs
     :return: scatter plot that shows the relation between true and estimated confounding strength beta.
              The number of points is given by the parameter 'runs'
@@ -68,7 +68,7 @@ def simulation_normalization(d, sample_size, runs):
         X = np.matmul(X, scale)
 
         # estimate both confounding parameters
-        parameters = estimate_confounding_via_kernel_smoothing(X, Y, 0, True)
+        parameters = estimate_confounding_via_kernel_smoothing(X, Y, 0, True)  # True means normalize
         beta_est.append(parameters[0])
         eta_est.append(parameters[1])
 

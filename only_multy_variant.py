@@ -7,8 +7,8 @@ from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_k
 
 def simulation_normalization(d, sample_size, runs):
     """
-    :param d: dimension
-    :param sample_size: sample
+    :param d: dimension of X
+    :param sample_size: number of samples
     :param runs: number of runs
     :return: scatter plot that shows the relation between true and estimated confounding strength beta.
              The number of points is given by the parameter 'runs'

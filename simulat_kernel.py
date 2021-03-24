@@ -7,8 +7,8 @@ from estimate_confounding_via_kernel_smoothing import estimate_confounding_via_k
 
 def simulation(d, sample_size, runs):
     """
-    :param d: dimension
-    :param sample_size: sample
+    :param d: dimension of X
+    :param sample_size: number of samples
     :param runs: number of runs
     :return: scatter plot that shows the relation between true and estimated confounding strength beta.
              The number of points is given by the parameter 'runs'
@@ -47,12 +47,15 @@ def simulation(d, sample_size, runs):
 
         # compute X and Y via linear structural equations
         X = E + np.outer(Z, b)
-        X = kernel(X)
+        X = kernel(X)  # kernel is defined in estimate_confounding_via_kernel_smoothing
         Y = c * Z + np.matmul(X, a) + F
 
         # compute confounding parameters
+
+        # estimating confounding_vector because not all parameters are known
         SigmaXX = mat_vec_cov(X, X)
         confounding_vector = np.matmul(np.linalg.inv(SigmaXX), mat_vec_cov(X, c * Z))
+        # end estimation
         sq_length_cv = np.sum(confounding_vector ** 2)
         beta.append(sq_length_cv / (r_a ** 2 + sq_length_cv))
         eta.append(r_b ** 2)

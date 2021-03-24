@@ -4,6 +4,10 @@ from sklearn import linear_model
 
 
 def kernel(X):
+    """
+    :param X: data to be refitted
+    :return: the refitted data
+    """
     return X**2
 
 
@@ -11,11 +15,13 @@ def estimate_confounding_via_kernel_smoothing(X, Y, lamda=0, norm=False):
     """
     :param X: n x d matrix for the potential causes. Here d is the number of variables X_1,...,X_d and n is the number of samples
     :param Y: column vector of n instances of the target variable
+    :param lamda: the lambda parameter for the regularization.
+    :param norm: a bool variable stating either to normalize X or not
     :return: 2-dimensional vector "parameters" with the confounding parameters (beta,eta) as in the paper, with beta being the relevant one since the
              estimation of eta performs rather bad for reasons that I don't completely understand yet.
     """
     if norm:
-        # normalizing X using MinMax
+        # normalizing X using the inverse covariance matrix
         cxx = mat_vec_cov(X, X)
         scale = np.sqrt(np.diag(np.diag(cxx)))
         X = np.matmul(X, np.linalg.inv(scale))
@@ -23,8 +29,7 @@ def estimate_confounding_via_kernel_smoothing(X, Y, lamda=0, norm=False):
     d = X.shape[1]
     # Calculate covariance matrices
     cxx = mat_vec_cov(X, X)
-    # cxy = mat_vec_cov(X, Y)
-    # closed-form solution for linear regression coefficients
+    # linear regression
     reg.fit(X, Y)
     a_hat = np.array(reg.coef_)
     spectrumX, eigenvectors = np.linalg.eig(cxx)
@@ -40,8 +45,8 @@ def estimate_confounding_via_kernel_smoothing(X, Y, lamda=0, norm=False):
 
 def outer_with_kernel(value1, value2):
     """
-    :param value1:
-    :param value2:
+    :param value1: broad of the spectrum to squared matrix
+    :param value2: the spectrum as a vector
     :return:
     """
     sigma = 0.2
@@ -51,19 +56,18 @@ def outer_with_kernel(value1, value2):
 
 def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weights):
     """
-
-    :param d:
-    :param spectrumX:
-    :param weights_causal:
-    :param smoothing_matrix:
-    :param smoothed_weights:
-    :return:
+    :param d: the number of dimensions of X
+    :param spectrumX: the eigenvalues of cxx as a vector
+    :param weights_causal: a vector of length d of 1/d estimating the weights of the causal a on the spectrum
+    :param smoothing_matrix: the K matrix from the paper
+    :param smoothed_weights: the real weights multiplied by K
+    :return: an estimation of beta
     """
 
     def get_distance(_lambda):
         """
-        :param _lambda:
-        :return:
+        :param _lambda: the function to minimize
+        :return: the optimal estimations of beta and eta
         """
         g = np.full(d, 1/np.sqrt(d))
         T = np.diag(spectrumX) + _lambda[1] * np.outer(g, g)
@@ -80,6 +84,11 @@ def optim_distance(d, spectrumX, weights_causal, smoothing_matrix, smoothed_weig
 
 
 def mat_vec_cov(X, y):
+    """
+    :param X: np array nxm
+    :param y: np array nxl
+    :return: the covariance of the arrays
+    """
     X = X - np.mean(X, axis=0)
     y = y - np.mean(y, axis=0)
     cov = np.matmul(np.transpose(X), y)

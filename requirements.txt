@@ -1,0 +1,7 @@
+matplotlib @ file:///C:/ci/matplotlib-base_1592837548929/work
+numpy==1.18.5
+numpydoc @ file:///tmp/build/80754af9/numpydoc_1594166760263/work
+pandas @ file:///C:/ci/pandas_1592833613419/work
+scikit-image==0.16.2
+scikit-learn @ file:///C:/ci/scikit-learn_1592853510272/work
+scipy @ file:///C:/ci/scipy_1592916963468/work
